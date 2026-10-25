@@ -11,6 +11,27 @@ export interface SageRoute {
 
 export const routes: SageRoute[] = [
   {
+    path: '/callback',
+    component: () => import('./pages/callback.vue'),
+    name: 'Spotify Callback',
+    meta: { requiresAuth: false },
+    params: []
+  },
+  {
+    path: '/spotify-connect',
+    component: () => import('./pages/spotify-connect.vue'),
+    name: 'Spotify Connect',
+    meta: { requiresAuth: false },
+    params: []
+  },
+  {
+    path: '/soundcloud',
+    component: () => import('./pages/soundcloud.vue'),
+    name: 'SoundCloud',
+    meta: { requiresAuth: false },
+    params: []
+  },
+  {
     path: '/audius/users/:id',
     component: () => import('./pages/audius.users.[id].vue'),
     name: 'Audius User Detail',
