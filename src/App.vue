@@ -4,6 +4,7 @@
     <SpotifyConnectPage v-else-if="standalonePage === 'spotify-connect'" />
     <SpotifyCallbackPage v-else-if="standalonePage === 'callback'" />
     <SpotifyStatusPage v-else-if="standalonePage === 'spotify-status'" />
+    <AudioTestPage v-else-if="standalonePage === 'audio-test'" />
   </template>
   <template v-else>
     <Root />
@@ -20,6 +21,7 @@ import SoundCloudPage from "./pages/soundcloud.vue";
 import SpotifyConnectPage from "./pages/spotify-connect.vue";
 import SpotifyCallbackPage from "./pages/callback.vue";
 import SpotifyStatusPage from "./pages/spotify-status.vue";
+import AudioTestPage from "./pages/audio-test.vue";
 
 // The Sage router can redirect unknown routes to its default visualizer.
 // Mount standalone integration pages directly so they remain accessible.
@@ -28,7 +30,8 @@ const standalonePage =
   path === "/soundcloud" ? "soundcloud" :
   path === "/spotify-connect" ? "spotify-connect" :
   path === "/callback" ? "callback" :
-  path === "/spotify-status" ? "spotify-status" : null;
+  path === "/spotify-status" ? "spotify-status" :
+  path === "/audio-test" ? "audio-test" : null;
 </script>
 
 <style lang="scss">
