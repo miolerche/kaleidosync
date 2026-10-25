@@ -2,6 +2,7 @@
   <main class="spotify-callback">
     <h1>Spotify verbinden</h1>
     <p role="status">{{ status }}</p>
+    <a v-if="completed" href="/spotify-status">Aktuellen Spotify-Titel anzeigen</a>
     <a v-if="failed" href="/visualizer">Zurück zur Visualisierung</a>
   </main>
 </template>
@@ -12,11 +13,13 @@ import { finishSpotifyLogin } from "../spotify/pkce";
 
 const status = ref("Spotify-Anmeldung wird abgeschlossen …");
 const failed = ref(false);
+const completed = ref(false);
 
 onMounted(async () => {
   try {
     await finishSpotifyLogin(window.location.search);
-    status.value = "Spotify-Anmeldung erfolgreich. Die Wiedergabe-Anbindung wird noch vorbereitet.";
+    status.value = "Spotify-Anmeldung erfolgreich. Du kannst jetzt deine aktuelle Wiedergabe prüfen.";
+    completed.value = true;
   } catch (error) {
     failed.value = true;
     status.value = error instanceof Error ? error.message : "Spotify-Anmeldung fehlgeschlagen.";
