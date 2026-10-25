@@ -7,6 +7,9 @@
     <button @click="stop" :disabled="!active">Test beenden</button>
     <p role="status">{{ status }}</p>
     <p v-if="active">Eingangspegel: {{ Math.round(level * 100) }} %</p>
+    <p v-if="active">Bass (35–140 Hz): {{ Math.round(bass * 100) }} % · Beat-Impulse: {{ beats }}</p>
+    <div v-if="active" class="beat" :class="{ hit: beatFlash }">BASS / BEAT</div>
+    <label v-if="active">Empfindlichkeit: {{ sensitivity.toFixed(1) }} × <input v-model.number="sensitivity" type="range" min="1.2" max="3.5" step="0.1" /></label>
     <div class="meter"><div :style="{ width: Math.round(level * 100) + '%' }"></div></div>
     <p v-if="active">Bewegt sich der Balken zur Musik? Stoppt Spotify oder verändert sich der Ton? Bitte beobachte beides.</p>
     <a href="/spotify-status">Zurück zum Spotify-Status</a>
@@ -19,6 +22,12 @@ import { onBeforeUnmount, ref } from "vue";
 const status = ref("Noch nicht gestartet.");
 const active = ref(false);
 const level = ref(0);
+const bass = ref(0);
+const beats = ref(0);
+const beatFlash = ref(false);
+const sensitivity = ref(1.8);
+let baseline = 0;
+let lastBeat = 0;
 let stream: MediaStream | null = null;
 let context: AudioContext | null = null;
 let frame = 0;
@@ -40,6 +49,8 @@ async function start() {
     source.connect(analyser);
     await context.resume();
     const data = new Uint8Array(analyser.fftSize);
+    const spectrum = new Uint8Array(analyser.frequencyBinCount);
+    analyser.smoothingTimeConstant = 0.45;
     active.value = true;
     status.value = "Mikrofon aktiv. Läuft Spotify weiter? Der Balken zeigt das aufgenommene Signal.";
     function update() {
@@ -51,6 +62,19 @@ async function start() {
         sum += x * x;
       }
       level.value = Math.min(1, Math.sqrt(sum / data.length) * 5);
+      analyser.getByteFrequencyData(spectrum);
+      const binHz = context!.sampleRate / analyser.fftSize;
+      const start = Math.max(1, Math.ceil(35 / binHz));
+      const end = Math.min(spectrum.length - 1, Math.floor(140 / binHz));
+      let energy = 0;
+      for (let i = start; i <= end; i++) energy += spectrum[i] * spectrum[i];
+      const currentBass = end >= start ? Math.sqrt(energy / (end - start + 1)) / 255 : 0;
+      bass.value = Math.min(1, currentBass);
+      baseline = baseline ? baseline * 0.97 + currentBass * 0.03 : currentBass;
+      const now = performance.now();
+      const isBeat = currentBass > 0.09 && currentBass > baseline * sensitivity.value && now - lastBeat > 220;
+      if (isBeat) { beats.value++; lastBeat = now; }
+      beatFlash.value = now - lastBeat < 130;
       frame = requestAnimationFrame(update);
     }
     update();
@@ -67,6 +91,11 @@ function stop() {
   if (context) void context.close();
   context = null;
   level.value = 0;
+  bass.value = 0;
+  beats.value = 0;
+  beatFlash.value = false;
+  baseline = 0;
+  lastBeat = 0;
   status.value = "Test beendet.";
 }
 onBeforeUnmount(stop);
@@ -79,4 +108,7 @@ button:disabled { opacity: .45; }
 .meter { height: 22px; border: 1px solid #777; border-radius: 5px; overflow: hidden; }
 .meter > div { height: 100%; background: #48d9a0; transition: width 80ms linear; }
 a { color: #86c7ff; }
+.beat { padding: 2rem; border-radius: 1rem; text-align: center; background: #24283a; transition: background 80ms; font-size: 1.5rem; font-weight: bold; }
+.beat.hit { background: #2cb97f; color: #101510; }
+input[type="range"] { width: 100%; }
 </style>
