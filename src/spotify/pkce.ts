@@ -4,7 +4,7 @@
  * This module does not replace Sage's Spotify playback adapter.
  */
 const CLIENT_ID = "7972485daaac4cd9abe7323e0adb3670";
-const REDIRECT_URI = "https://kaleidosync.pages.dev/callback";
+const REDIRECT_URI = `${window.location.origin}/callback`;
 const AUTH_URL = "https://accounts.spotify.com/authorize";
 const TOKEN_URL = "https://accounts.spotify.com/api/token";
 const STORAGE_KEY = "kaleidosync.spotify.pkce";
