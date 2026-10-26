@@ -24,7 +24,8 @@
     <Transition name="fade">
       <nav v-if="!radioParadise">
         <MenuHeader @close="$emit('close')" title="choose your audio source" />
-        <IconButton icon="spotify" @click="$emit('select-source', AudioSource.SPOTIFY)" label="Spotify" />
+        <IconButton icon="spotify" @click="openSpotify" label="Spotify" />
+        <IconButton icon="link" @click="openSoundCloud" label="SoundCloud (Link)" />
         <IconButton icon="audius" @click="$emit('select-source', AudioSource.AUDIUS)" label="Audius" />
         <IconButton icon="radio-paradise" @click="toggleRadioParadise" label="Radio Paradise" />
         <IconButton icon="kexp" @click="$emit('select-source', AudioSource.KEXP)" label="KEXP" />
@@ -50,6 +51,16 @@ const emit = defineEmits(["select-source", "close", "select-radio-paradise"]);
 const radioParadise = ref(false);
 const fileInput = ref<HTMLInputElement>();
 const sources = useSources();
+
+function openSpotify() {
+  // The Sage Spotify adapter still requires its original backend. Use the
+  // working PKCE entry point instead of sending users to localhost:2223.
+  window.location.assign("/spotify-connect");
+}
+
+function openSoundCloud() {
+  window.location.assign("/soundcloud");
+}
 
 function toggleRadioParadise() {
   radioParadise.value = !radioParadise.value;
